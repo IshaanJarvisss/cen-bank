@@ -148,25 +148,7 @@
             -webkit-text-fill-color: transparent;
         }
 
-        /* --- LEDGER SYSTEM INTEGRATION --- */
-        .ledger-card { 
-            background: #0b0f19;
-            border: 1px solid rgba(0, 255, 136, 0.15); 
-            padding: 35px; 
-            border-radius: 24px; 
-            box-shadow: var(--shadow);
-            position: relative;
-        }
-
-        .balance-ledger { 
-            font-size: 2.8rem; 
-            font-weight: 800; 
-            color: var(--dark-accent); 
-            margin: 10px 0; 
-            letter-spacing: -1px;
-            text-shadow: 0 0 20px rgba(0, 255, 136, 0.15);
-        }
-
+        /* --- SYSTEM STATUS PILL --- */
         .status-pill { 
             display: inline-block; 
             padding: 6px 14px; 
@@ -178,6 +160,9 @@
             border: 1px solid #1f2937; 
             text-transform: uppercase;
             letter-spacing: 0.5px;
+            margin-bottom: 12px;
+            align-self: flex-start;
+            width: fit-content;
         }
 
         .status-pill.online { 
@@ -188,7 +173,7 @@
 
         /* --- TRANSACTION SYSTEM OVERVIEW --- */
         .history-section {
-            height: 660px;
+            height: 600px;
             display: flex;
             flex-direction: column;
         }
@@ -268,7 +253,6 @@
             body { padding: 12px; }
             .dashboard-grid { grid-template-columns: 1fr; gap: 20px; }
             .total-balance-text { font-size: 2.2rem; }
-            .balance-ledger { font-size: 2.4rem; }
             .card { padding: 22px; }
             .history-section { height: 520px; }
         }
@@ -300,18 +284,15 @@
                     </div>
                 </div>
 
-                <div class="ledger-card">
-                    <div id="connection-status" class="status-pill">Synchronizing System Matrix...</div>
-                    <div class="label" style="margin-top: 25px;">Available Liquidity</div>
-                    <div class="balance-ledger" id="balance">₹0.00</div>
-                    <div style="color: #475569; font-size: 13px; font-weight: 500; margin-top: 5px;">ID: pranshi_main</div>
-                </div>
-
-                <div class="card">
-                    <h3 style="font-size: 1.1rem; font-weight: 700; margin-bottom: 8px;">System Security</h3>
-                    <p style="color: var(--text-sub); font-size: 0.85rem; line-height: 1.5;">
+                <div class="card" style="display: flex; flex-direction: column;">
+                    <div id="connection-status" class="status-pill">Synchronizing Ledger...</div>
+                    <h3 style="font-size: 1.1rem; font-weight: 700; margin-bottom: 8px; margin-top: 5px;">System Security</h3>
+                    <p style="color: var(--text-sub); font-size: 0.85rem; line-height: 1.5; margin-bottom: 15px;">
                         Automated sync handshake securely active with <b>CEN_GATEWAY</b>.
                     </p>
+                    <div style="border-top: 1px solid var(--border); padding-top: 12px; font-size: 12px; color: var(--text-sub);">
+                        <b>Account ID:</b> <span style="font-family: monospace; color: #e2e8f0;">pranshi_main</span>
+                    </div>
                 </div>
             </div>
 
@@ -349,7 +330,6 @@
 
         // Object reference cache
         const balanceDisplay = document.getElementById('balance-amount');
-        const darkBalanceDisplay = document.getElementById('balance');
         const historyContainer = document.getElementById('transaction-history');
         const statusPill = document.getElementById('connection-status');
 
@@ -361,14 +341,8 @@
                 const data = snapshot.val();
                 
                 if (data) {
-                    // Update main panel displays
+                    // Update main dynamic panel counters
                     animateValue(balanceDisplay, parseFloat(data.balance || 0));
-
-                    darkBalanceDisplay.innerText = parseFloat(data.balance || 0).toLocaleString('en-IN', {
-                        style: 'currency',
-                        currency: 'INR',
-                        minimumFractionDigits: 2
-                    });
                     
                     // Trigger active connection responses
                     statusPill.innerText = "● CENTRAL LEDGER LINKED";
@@ -437,7 +411,7 @@
                 const mathematicalDelta = Math.min(stepProgression / timelineDuration, 1);
                 const absoluteComputedValue = mathematicalDelta * value;
                 
-                obj.innerHTML = `CEN ${absoluteComputedValue.toLocaleString(undefined, {minimumFractionDigits: 2})}`;
+                obj.innerHTML = `CEN ${absoluteComputedValue.toLocaleString(undefined, {minimumFractionDigits: 3})}`;
                 
                 if (mathematicalDelta < 1) {
                     requestAnimationFrame(renderStep);
