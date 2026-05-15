@@ -2,126 +2,500 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
+    <meta http-equiv="Content-Security-Policy" content="script-src 'self' 'unsafe-inline' 'unsafe-eval' https://www.gstatic.com https://apis.google.com;">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>CEN Bank | Central Ledger</title>
-    <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-app.js"></script>
-    <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-database.js"></script>
+    <title>CENTROL | Digital Banking Hub</title>
+    
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+    
+    <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-database-compat.js"></script>
+    
     <style>
-        :root { --accent: #00ff88; --bg: #0a0a0a; --panel: #111; }
-        body { background: var(--bg); color: white; font-family: 'Segoe UI', sans-serif; margin: 0; padding: 20px; display: flex; flex-direction: column; align-items: center; }
-        .ledger-card { background: var(--panel); border: 1px solid #222; padding: 40px; border-radius: 24px; width: 100%; max-width: 400px; margin-top: 40px; box-shadow: 0 10px 30px rgba(0,0,0,0.5); }
-        .balance { font-size: 3.2rem; font-weight: 800; color: var(--accent); margin: 15px 0; letter-spacing: -1px; }
-        .status-pill { display: inline-block; padding: 6px 16px; border-radius: 50px; font-size: 11px; font-weight: 700; background: #1a1a1a; color: #555; border: 1px solid #333; text-transform: uppercase; }
-        .status-pill.online { color: var(--accent); border-color: var(--accent); box-shadow: 0 0 10px rgba(0,255,136,0.2); }
-        .history-list { width: 100%; max-width: 400px; margin-top: 30px; }
-        .item { background: var(--panel); margin-bottom: 8px; padding: 15px; border-radius: 12px; display: flex; justify-content: space-between; align-items: center; border: 1px solid #222; }
-        .debit { color: #ff4444; font-weight: 600; }
-        .credit { color: var(--accent); font-weight: 600; }
-        .label { color: #666; font-size: 12px; text-transform: uppercase; letter-spacing: 1px; }
+        :root {
+            --bg: #090d16;
+            --surface: rgba(17, 24, 39, 0.7);
+            --primary: #ffffff;
+            --accent: #3b82f6;
+            --dark-accent: #00ff88;
+            --text-main: #f1f5f9;
+            --text-sub: #94a3b8;
+            --success: #10b981;
+            --danger: #ef4444;
+            --border: rgba(255, 255, 255, 0.08);
+            --shadow: 0 20px 40px -15px rgba(0, 0, 0, 0.5);
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Plus Jakarta Sans', sans-serif;
+        }
+
+        body {
+            background-color: var(--bg);
+            background-image: 
+                radial-gradient(at 0% 0%, rgba(59, 130, 246, 0.15) 0px, transparent 50%),
+                radial-gradient(at 100% 100%, rgba(0, 255, 136, 0.1) 0px, transparent 50%);
+            background-attachment: fixed;
+            color: var(--text-main);
+            display: flex;
+            justify-content: center;
+            min-height: 100vh;
+            padding: 20px;
+        }
+
+        .app-container {
+            width: 100%;
+            max-width: 1200px;
+            animation: fadeIn 0.6s cubic-bezier(0.16, 1, 0.3, 1);
+        }
+
+        /* --- NAVIGATION --- */
+        nav {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 20px 10px;
+            margin-bottom: 25px;
+            border-bottom: 1px solid var(--border);
+        }
+
+        .logo {
+            font-size: 1.5rem;
+            font-weight: 800;
+            letter-spacing: -1px;
+            color: var(--primary);
+        }
+
+        .logo span {
+            font-weight: 300;
+            color: var(--text-sub);
+        }
+
+        /* --- DASHBOARD RESPONSIVE GRID --- */
+        .dashboard-grid {
+            display: grid;
+            grid-template-columns: 1fr 1.2fr;
+            gap: 25px;
+            align-items: start;
+        }
+
+        .left-column {
+            display: flex;
+            flex-direction: column;
+            gap: 25px;
+        }
+
+        /* --- CARD BASE STYLING (GLASSMORPHISM) --- */
+        .card {
+            background: var(--surface);
+            backdrop-filter: blur(16px) saturate(120%);
+            -webkit-backdrop-filter: blur(16px) saturate(120%);
+            border-radius: 24px;
+            padding: 30px;
+            box-shadow: var(--shadow);
+            border: 1px solid var(--border);
+            transition: transform 0.3s ease, border-color 0.3s ease;
+        }
+
+        .card:hover {
+            border-color: rgba(255, 255, 255, 0.15);
+        }
+
+        /* --- DIGITAL WALLET CARD --- */
+        .balance-card {
+            background: linear-gradient(135deg, #1e293b 0%, #0f172a 100%);
+            color: white;
+            position: relative;
+            overflow: hidden;
+            border: 1px solid rgba(59, 130, 246, 0.2);
+        }
+
+        .balance-card:hover {
+            transform: translateY(-4px);
+        }
+
+        .balance-card::after {
+            content: '';
+            position: absolute;
+            top: -40px;
+            right: -40px;
+            width: 160px;
+            height: 160px;
+            background: radial-gradient(circle, rgba(59, 130, 246, 0.2) 0%, transparent 70%);
+            border-radius: 50%;
+        }
+
+        .label {
+            font-size: 0.8rem;
+            color: var(--text-sub);
+            text-transform: uppercase;
+            letter-spacing: 1.5px;
+            font-weight: 600;
+            margin-bottom: 8px;
+            display: block;
+        }
+
+        .total-balance-text {
+            font-size: 2.6rem;
+            font-weight: 800;
+            letter-spacing: -1px;
+            margin-bottom: 20px;
+            background: linear-gradient(to right, #ffffff, #e2e8f0);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+
+        /* --- LEDGER SYSTEM INTEGRATION --- */
+        .ledger-card { 
+            background: #0b0f19;
+            border: 1px solid rgba(0, 255, 136, 0.15); 
+            padding: 30px; 
+            border-radius: 24px; 
+            box-shadow: var(--shadow);
+            position: relative;
+        }
+        
+        .ledger-card::before {
+            content: '';
+            position: absolute;
+            top: 0; right: 0; bottom: 0; left: 0;
+            border-radius: 24px;
+            pointer-events: none;
+            box-shadow: inset 0 0 20px rgba(0, 255, 136, 0.03);
+        }
+
+        .balance-ledger { 
+            font-size: 2.8rem; 
+            font-weight: 800; 
+            color: var(--dark-accent); 
+            margin: 10px 0; 
+            letter-spacing: -1px;
+            text-shadow: 0 0 20px rgba(0, 255, 136, 0.15);
+        }
+
+        .status-pill { 
+            display: inline-block; 
+            padding: 6px 14px; 
+            border-radius: 50px; 
+            font-size: 10px; 
+            font-weight: 700; 
+            background: #111827; 
+            color: #64748b; 
+            border: 1px solid #1f2937; 
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        .status-pill.online { 
+            color: var(--dark-accent); 
+            border-color: rgba(0, 255, 136, 0.3); 
+            background: rgba(0, 255, 136, 0.04);
+        }
+
+        /* --- TRANSACTION SYSTEM OVERVIEW --- */
+        .history-section {
+            height: 660px;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .section-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+            padding-bottom: 15px;
+            border-bottom: 1px solid var(--border);
+        }
+
+        .history-list {
+            flex-grow: 1;
+            overflow-y: auto;
+            padding-right: 8px;
+        }
+
+        .history-list::-webkit-scrollbar {
+            width: 6px;
+        }
+
+        .history-list::-webkit-scrollbar-thumb {
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 10px;
+        }
+
+        .transaction-item {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 16px;
+            border-radius: 16px;
+            margin-bottom: 12px;
+            background: rgba(255, 255, 255, 0.02);
+            border: 1px solid var(--border);
+            transition: background 0.2s, transform 0.2s;
+        }
+
+        .transaction-item:hover {
+            background: rgba(255, 255, 255, 0.04);
+            transform: translateX(2px);
+        }
+
+        .tx-info {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+        }
+
+        .tx-icon {
+            width: 42px;
+            height: 42px;
+            border-radius: 12px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.1rem;
+            font-weight: 700;
+        }
+
+        .icon-credit { background: rgba(16, 185, 129, 0.15); color: var(--success); border: 1px solid rgba(16, 185, 129, 0.2); }
+        .icon-debit { background: rgba(239, 68, 68, 0.15); color: var(--danger); border: 1px solid rgba(239, 68, 68, 0.2); }
+
+        .tx-details h4 { font-size: 0.95rem; font-weight: 600; color: #f8fafc; margin-bottom: 2px; }
+        .tx-details p { font-size: 0.75rem; color: var(--text-sub); }
+        .tx-amount { font-weight: 700; font-size: 1.05rem; letter-spacing: -0.5px; }
+
+        /* --- STYLES FOR THE ATTACHED DIRECT VIEW DATA FEED --- */
+        .dark-history-feed { margin-top: 20px; border-top: 1px solid #1f2937; padding-top: 15px; }
+        .feed-item { display: flex; justify-content: space-between; align-items: center; padding: 10px 0; border-bottom: 1px solid #111827; font-size: 13px; }
+        .feed-item:last-child { border-bottom: none; }
+        .feed-debit { color: var(--danger); font-weight: 600; }
+        .feed-credit { color: var(--dark-accent); font-weight: 600; }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(15px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        /* --- RESPONSIVE BREAKPOINTS (MOBILE AND DESKTOP FIXES) --- */
+        @media (max-width: 900px) {
+            body { padding: 12px; }
+            .dashboard-grid { grid-template-columns: 1fr; gap: 20px; }
+            .total-balance-text { font-size: 2.2rem; }
+            .balance-ledger { font-size: 2.4rem; }
+            .card { padding: 22px; }
+            .history-section { height: 520px; }
+        }
     </style>
 </head>
 <body>
 
-<div class="ledger-card">
-    <div id="status" class="status-pill">Synchronizing...</div>
-    <div class="label" style="margin-top: 25px;">Available Liquidity</div>
-    <div class="balance" id="balance">₹0.00</div>
-    <div style="color: #444; font-size: 13px;">ID: pranshi_main</div>
-</div>
+    <div class="app-container">
+        <nav>
+            <div class="logo">CENTROL<span>BANK</span></div>
+            <div id="user-display" style="font-weight: 600; color: var(--text-sub); font-size: 0.95rem;">Welcome, Pranshi</div>
+        </nav>
 
-<div class="history-list" id="history-container">
-    <div class="label" style="margin-bottom: 15px;">Transaction History</div>
-    <div id="history-content">
+        <div class="dashboard-grid">
+            <div class="left-column">
+                
+                <div class="card balance-card">
+                    <span class="label">Current Balance</span>
+                    <h1 id="balance-amount" class="total-balance-text">CEN 0.00</h1>
+                    <div style="margin-top: 30px; display: flex; gap: 25px;">
+                        <div>
+                            <span class="label" style="font-size: 0.65rem;">Account Status</span>
+                            <p style="font-weight: 600; font-size: 0.9rem; color: #f8fafc;">Active</p>
+                        </div>
+                        <div>
+                            <span class="label" style="font-size: 0.65rem;">Currency</span>
+                            <p style="font-weight: 600; font-size: 0.9rem; color: #f8fafc;">CEN (Digital)</p>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="ledger-card">
+                    <div id="connection-status" class="status-pill">Synchronizing System Matrix...</div>
+                    <div class="label" style="margin-top: 20px;">Available Liquidity</div>
+                    <div class="balance-ledger" id="balance">₹0.00</div>
+                    <div style="color: #475569; font-size: 12px; font-weight: 500;">ID: pranshi_main</div>
+                    
+                    <div class="dark-history-feed" id="ledger-history-container">
+                        <div class="label" style="font-size: 11px; margin-bottom: 8px;">Real-Time Matrix Stream</div>
+                        </div>
+                </div>
+
+                <div class="card">
+                    <h3 style="font-size: 1.1rem; font-weight: 700; margin-bottom: 8px;">System Security</h3>
+                    <p style="color: var(--text-sub); font-size: 0.85rem; line-height: 1.5;">
+                        Automated sync handshake securely active with <b>CEN_GATEWAY</b>.
+                    </p>
+                </div>
+            </div>
+
+            <div class="card history-section">
+                <div class="section-header">
+                    <h3 style="font-size: 1.2rem; font-weight: 700;">Recent Transactions</h3>
+                    <button id="refresh-btn" style="background: none; border: none; color: var(--accent); cursor: pointer; font-weight: 700; font-size: 0.85rem; letter-spacing: 0.5px;">REFRESH</button>
+                </div>
+                
+                <div class="history-list" id="transaction-history">
+                    <p id="loading-text" style="color: var(--text-sub); font-size: 0.9rem; text-align: center; margin-top: 30px;">Connecting to ledger nodes...</p>
+                </div>
+            </div>
         </div>
-</div>
+    </div>
 
-<script>
-    // --- DATABASE CONFIGURATION ---
-    // Full operational matrix attached to maintain handshake stability without dropping WebSocket frames
-    const firebaseConfig = {
-        apiKey: "AIzaSyDL7CPrwuAw-BrIPHQuNtydc1h1g73sFVk",
-        authDomain: "centrol-bank.firebaseapp.com",
-        databaseURL: "https://centrol-bank-default-rtdb.asia-southeast1.firebasedatabase.app",
-        projectId: "centrol-bank",
-        storageBucket: "centrol-bank.firebasestorage.app",
-        messagingSenderId: "577293119465",
-        appId: "1:577293119465:web:1a6f72747c56be845ca578"
-    };
-    
-    // Initialize Firebase properly
-    if (!firebase.apps.length) {
-        firebase.initializeApp(firebaseConfig);
-    }
-    
-    const db = firebase.database();
-    const userId = "pranshi_main";
+    <script>
+        // --- REAL-TIME DATA HUB INTERNALS ---
+        const firebaseConfig = {
+            apiKey: "AIzaSyDL7CPrwuAw-BrIPHQuNtydc1h1g73sFVk",
+            authDomain: "centrol-bank.firebaseapp.com",
+            databaseURL: "https://centrol-bank-default-rtdb.asia-southeast1.firebasedatabase.app",
+            projectId: "centrol-bank",
+            storageBucket: "centrol-bank.firebasestorage.app",
+            messagingSenderId: "577293119465",
+            appId: "1:577293119465:web:1a6f72747c56be845ca578"
+        };
 
-    // --- LIVE DATA CONNECTORS ---
-    function initBank() {
-        const balanceDisplay = document.getElementById('balance');
-        const statusPill = document.getElementById('status');
-        const historyContent = document.getElementById('history-content');
+        // Complete safe instance generation
+        if (!firebase.apps.length) {
+            firebase.initializeApp(firebaseConfig);
+        }
+        const db = firebase.database();
+        const userId = "pranshi_main";
 
-        // 1. Listen for Balance Changes
-        db.ref(`users/${userId}/balance`).on('value', (snap) => {
-            const val = snap.val();
-            // Handle scientific notation and rounding
-            const formattedBal = parseFloat(val || 0).toLocaleString('en-IN', {
-                style: 'currency',
-                currency: 'INR',
-                minimumFractionDigits: 2
+        // Object reference cache
+        const balanceDisplay = document.getElementById('balance-amount');
+        const darkBalanceDisplay = document.getElementById('balance');
+        const historyContainer = document.getElementById('transaction-history');
+        const ledgerHistoryContainer = document.getElementById('ledger-history-container');
+        const statusPill = document.getElementById('connection-status');
+
+        function startSynchronizedNetwork() {
+            const userPath = `users/${userId}`;
+
+            // Sync structural nodes cleanly
+            db.ref(userPath).on('value', (snapshot) => {
+                const data = snapshot.val();
+                
+                if (data) {
+                    // Update main panel displays
+                    animateValue(balanceDisplay, parseFloat(data.balance || 0));
+
+                    darkBalanceDisplay.innerText = parseFloat(data.balance || 0).toLocaleString('en-IN', {
+                        style: 'currency',
+                        currency: 'INR',
+                        minimumFractionDigits: 2
+                    });
+                    
+                    // Trigger active connection responses
+                    statusPill.innerText = "● CENTRAL LEDGER LINKED";
+                    statusPill.style.color = "";
+                    statusPill.classList.add('online');
+
+                    // Map primary graphic interface logs
+                    buildGraphicalHistory(data.history);
+                } else {
+                    // Initialize if completely blank node environment
+                    db.ref(userPath).set({
+                        balance: 0,
+                        history: {}
+                    });
+                }
+            }, (error) => {
+                statusPill.innerText = "X SYNC FAILED";
+                statusPill.style.color = "var(--danger)";
+                console.error("Link disruption: ", error);
             });
-            
-            balanceDisplay.innerText = formattedBal;
-            
-            // UI Update on Success
-            statusPill.innerText = "● CENTRAL LEDGER LINKED";
-            statusPill.style.color = ""; // Clear any previous dynamic error color overrides
-            statusPill.classList.add('online');
-        }, (err) => {
-            statusPill.innerText = "X SYNC FAILED";
-            statusPill.style.color = "#ff4444";
-            console.error("Firebase Error:", err);
-        });
 
-        // 2. Listen for History Updates
-        db.ref(`users/${userId}/history`).limitToLast(10).on('value', (snap) => {
-            historyContent.innerHTML = '';
-            let logs = [];
-            
-            snap.forEach(child => {
-                logs.push(child.val());
+            // Sync structural sub-feed inside matrix box
+            db.ref(`users/${userId}/history`).limitToLast(4).on('value', (snapshot) => {
+                // Clear and reset the structural container layout
+                ledgerHistoryContainer.innerHTML = '<div class="label" style="font-size: 11px; margin-bottom: 8px;">Real-Time Matrix Stream</div>';
+                
+                let streamLogs = [];
+                snapshot.forEach(child => { streamLogs.push(child.val()); });
+                
+                if (streamLogs.length === 0) {
+                    ledgerHistoryContainer.innerHTML += '<div class="feed-item"><span style="color:#475569;">No transaction streams linked</span></div>';
+                    return;
+                }
+
+                streamLogs.reverse().forEach(log => {
+                    const isDebit = log.type === "DEBIT";
+                    const formatClass = isDebit ? "feed-debit" : "feed-credit";
+                    const operationalSign = isDebit ? "-" : "+";
+                    
+                    ledgerHistoryContainer.innerHTML += `
+                        <div class="feed-item">
+                            <span style="color: #e2e8f0; font-weight: 500;">${log.description || 'Transaction'}</span>
+                            <span class="${formatClass}">${operationalSign}₹${Math.abs(log.amount || 0).toFixed(2)}</span>
+                        </div>
+                    `;
+                });
             });
+        }
 
-            if (logs.length === 0) {
-                historyContent.innerHTML = '<div style="color:#444; font-size:13px; text-align:center; padding:20px;">No transaction history available.</div>';
+        // Render main transaction system view panel
+        function buildGraphicalHistory(historyData) {
+            if (!historyData) {
+                historyContainer.innerHTML = '<p style="text-align:center; color:var(--text-sub); margin-top:30px; font-size:0.9rem;">No transaction parameters stored.</p>';
                 return;
             }
 
-            // Show newest transactions at the top
-            logs.reverse().forEach(data => {
-                const isDebit = data.type === "DEBIT";
-                const amountClass = isDebit ? "debit" : "credit";
-                const symbol = isDebit ? "-" : "+";
-                
-                historyContent.innerHTML += `
-                    <div class="item">
-                        <div>
-                            <div style="font-size:14px; font-weight:500;">${data.description || 'Transaction'}</div>
-                            <div style="font-size:10px; color:#555;">${data.timestamp || ''}</div>
+            const historicalQueue = Object.values(historyData).reverse();
+            let builtHtml = '';
+
+            historicalQueue.forEach(tx => {
+                const isCredit = tx.type === 'CREDIT';
+                const styleMarker = isCredit ? 'icon-credit' : 'icon-debit';
+                const graphicVector = isCredit ? '↓' : '↑';
+                const arithmeticSign = isCredit ? '+' : '-';
+
+                builtHtml += `
+                    <div class="transaction-item">
+                        <div class="tx-info">
+                            <div class="tx-icon ${styleMarker}">${graphicVector}</div>
+                            <div class="tx-details">
+                                <h4>${tx.description || 'System Ledger Transfer'}</h4>
+                                <p>${tx.timestamp || 'Executed Link'}</p>
+                            </div>
                         </div>
-                        <div class="${amountClass}">${symbol}₹${Math.abs(data.amount || 0).toFixed(2)}</div>
+                        <div class="tx-amount" style="color: ${isCredit ? 'var(--success)' : 'var(--danger)'}">
+                            ${arithmeticSign}CEN ${Math.abs(tx.amount || 0).toFixed(2)}
+                        </div>
                     </div>
                 `;
             });
-        }, (err) => {
-            console.error("History sync execution failure:", err);
-        });
-    }
 
-    // Run on Load
-    window.onload = initBank;
-</script>
+            historyContainer.innerHTML = builtHtml;
+        }
 
+        // Fluid layout counter rendering algorithm
+        function animateValue(obj, value) {
+            let start = 0;
+            const timelineDuration = 800;
+            const startTimeStamp = performance.now();
+
+            function renderStep(currentTime) {
+                const stepProgression = currentTime - startTimeStamp;
+                const mathematicalDelta = Math.min(stepProgression / timelineDuration, 1);
+                const absoluteComputedValue = mathematicalDelta * value;
+                
+                obj.innerHTML = `CEN ${absoluteComputedValue.toLocaleString(undefined, {minimumFractionDigits: 2})}`;
+                
+                if (mathematicalDelta < 1) {
+                    requestAnimationFrame(renderStep);
+                }
+            }
+            requestAnimationFrame(renderStep);
+        }
+
+        // Execute processing pipelines
+        window.onload = startSynchronizedNetwork;
+    </script>
 </body>
 </html>
