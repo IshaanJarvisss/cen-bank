@@ -2,433 +2,126 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <meta http-equiv="Content-Security-Policy" content="script-src 'self' 'unsafe-inline' 'unsafe-eval' https://www.gstatic.com https://apis.google.com;">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>CENTROL | Unified Banking Hub</title>
-    
-    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;600;700&display=swap" rel="stylesheet">
-    
-    <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-app-compat.js"></script>
-    <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-database-compat.js"></script>
-    
+    <title>CEN Bank | Central Ledger</title>
+    <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-app.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-database.js"></script>
     <style>
-        /* --- STYLES FROM FILE 1 (LIGHT DASHBOARD) --- */
-        :root {
-            --bg: #f8fafc;
-            --surface: #ffffff;
-            --primary: #1e293b;
-            --accent: #3b82f6;
-            --text-main: #0f172a;
-            --text-sub: #64748b;
-            --success: #22c55e;
-            --danger: #ef4444;
-            --shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.05), 0 8px 10px -6px rgba(0, 0, 0, 0.05);
-            
-            /* File 2 root variables encapsulated */
-            --dark-accent: #00ff88; 
-            --dark-bg: #0a0a0a;
-        }
-
-        * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
-            font-family: 'Plus Jakarta Sans', sans-serif;
-        }
-
-        body {
-            background-color: var(--bg);
-            color: var(--text-main);
-            display: flex;
-            justify-content: center;
-            min-height: 100vh;
-            padding: 20px;
-        }
-
-        .app-container {
-            width: 100%;
-            max-width: 1200px;
-            animation: fadeIn 0.6s ease-out;
-        }
-
-        nav {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            padding: 20px 0;
-            margin-bottom: 30px;
-        }
-
-        .logo {
-            font-size: 1.5rem;
-            font-weight: 800;
-            letter-spacing: -1px;
-            color: var(--primary);
-        }
-
-        .logo span {
-            font-weight: 300;
-            color: var(--text-sub);
-        }
-
-        .dashboard-grid {
-            display: grid;
-            grid-template-columns: 1fr 1.2fr;
-            gap: 30px;
-            align-items: start;
-        }
-
-        .left-column {
-            display: flex;
-            flex-direction: column;
-            gap: 25px;
-        }
-
-        .card {
-            background: var(--surface);
-            border-radius: 24px;
-            padding: 30px;
-            box-shadow: var(--shadow);
-            border: 1px solid rgba(255, 255, 255, 0.7);
-        }
-
-        .balance-card {
-            background: linear-gradient(135deg, #1e293b 0%, #334155 100%);
-            color: white;
-            position: relative;
-            overflow: hidden;
-            transition: transform 0.3s ease;
-        }
-
-        .balance-card:hover {
-            transform: translateY(-5px);
-        }
-
-        .balance-card::after {
-            content: '';
-            position: absolute;
-            top: -50px;
-            right: -50px;
-            width: 150px;
-            height: 150px;
-            background: rgba(255, 255, 255, 0.05);
-            border-radius: 50%;
-        }
-
-        .label {
-            font-size: 0.9rem;
-            opacity: 0.7;
-            text-transform: uppercase;
-            letter-spacing: 1px;
-            margin-bottom: 10px;
-            display: block;
-        }
-
-        .history-section {
-            height: 600px;
-            display: flex;
-            flex-direction: column;
-        }
-
-        .section-header {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            margin-bottom: 20px;
-        }
-
-        .history-list {
-            flex-grow: 1;
-            overflow-y: auto;
-            padding-right: 10px;
-        }
-
-        .history-list::-webkit-scrollbar {
-            width: 5px;
-        }
-
-        .history-list::-webkit-scrollbar-thumb {
-            background: #e2e8f0;
-            border-radius: 10px;
-        }
-
-        .transaction-item {
-            display: flex;
-            align-items: center;
-            justify-content: space-between;
-            padding: 15px;
-            border-radius: 16px;
-            margin-bottom: 12px;
-            transition: background 0.2s;
-            border: 1px solid transparent;
-        }
-
-        .transaction-item:hover {
-            background: #f1f5f9;
-            border-color: #e2e8f0;
-        }
-
-        .tx-info {
-            display: flex;
-            align-items: center;
-            gap: 15px;
-        }
-
-        .tx-icon {
-            width: 45px;
-            height: 45px;
-            border-radius: 12px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            font-size: 1.2rem;
-        }
-
-        .icon-credit { background: #dcfce7; color: var(--success); }
-        .icon-debit { background: #fee2e2; color: var(--danger); }
-
-        .tx-details h4 { font-size: 1rem; margin-bottom: 2px; }
-        .tx-details p { font-size: 0.8rem; color: var(--text-sub); }
-        .tx-amount { font-weight: 700; font-size: 1.1rem; }
-
-        /* --- STYLES FROM FILE 2 (DARK CENTRAL LEDGER CARD) --- */
-        .ledger-wrapper {
-            margin-top: 10px;
-            text-align: center;
-        }
-        .ledger-card { 
-            background: var(--dark-bg); 
-            color: white;
-            border: 1px solid #222; 
-            padding: 30px; 
-            border-radius: 20px; 
-            max-width: 100%; 
-            margin: 0 auto;
-            box-shadow: 0 20px 40px rgba(0,0,0,0.2);
-        }
-        .balance { font-size: 3rem; font-weight: bold; color: var(--dark-accent); margin: 10px 0; font-family: 'Segoe UI', sans-serif; }
-        .status-pill { padding: 5px 15px; border-radius: 50px; font-size: 12px; background: #222; color: #888; display: inline-block; font-family: 'Segoe UI', sans-serif; }
-        .online { color: var(--dark-accent); border: 1px solid var(--dark-accent); }
-        .dark-history-list { text-align: left; max-width: 100%; margin: 20px auto 0 auto; font-size: 14px; font-family: 'Segoe UI', sans-serif; }
-        .item { padding: 10px; border-bottom: 1px solid #222; display: flex; justify-content: space-between; }
-        .debit { color: #ff4444; }
-        .credit { color: var(--dark-accent); }
-
-        @keyframes fadeIn {
-            from { opacity: 0; transform: translateY(20px); }
-            to { opacity: 1; transform: translateY(0); }
-        }
-
-        @media (max-width: 850px) {
-            .dashboard-grid {
-                grid-template-columns: 1fr;
-            }
-        }
+        :root { --accent: #00ff88; --bg: #0a0a0a; --panel: #111; }
+        body { background: var(--bg); color: white; font-family: 'Segoe UI', sans-serif; margin: 0; padding: 20px; display: flex; flex-direction: column; align-items: center; }
+        .ledger-card { background: var(--panel); border: 1px solid #222; padding: 40px; border-radius: 24px; width: 100%; max-width: 400px; margin-top: 40px; box-shadow: 0 10px 30px rgba(0,0,0,0.5); }
+        .balance { font-size: 3.2rem; font-weight: 800; color: var(--accent); margin: 15px 0; letter-spacing: -1px; }
+        .status-pill { display: inline-block; padding: 6px 16px; border-radius: 50px; font-size: 11px; font-weight: 700; background: #1a1a1a; color: #555; border: 1px solid #333; text-transform: uppercase; }
+        .status-pill.online { color: var(--accent); border-color: var(--accent); box-shadow: 0 0 10px rgba(0,255,136,0.2); }
+        .history-list { width: 100%; max-width: 400px; margin-top: 30px; }
+        .item { background: var(--panel); margin-bottom: 8px; padding: 15px; border-radius: 12px; display: flex; justify-content: space-between; align-items: center; border: 1px solid #222; }
+        .debit { color: #ff4444; font-weight: 600; }
+        .credit { color: var(--accent); font-weight: 600; }
+        .label { color: #666; font-size: 12px; text-transform: uppercase; letter-spacing: 1px; }
     </style>
 </head>
 <body>
 
-    <div class="app-container">
-        <nav>
-            <div class="logo">CENTROL<span>BANK</span></div>
-            <div id="user-display" style="font-weight: 600;">Welcome, Pranshi</div>
-        </nav>
+<div class="ledger-card">
+    <div id="status" class="status-pill">Synchronizing...</div>
+    <div class="label" style="margin-top: 25px;">Available Liquidity</div>
+    <div class="balance" id="balance">₹0.00</div>
+    <div style="color: #444; font-size: 13px;">ID: pranshi_main</div>
+</div>
 
-        <div class="dashboard-grid">
-            <div class="left-column">
-                
-                <div class="card balance-card">
-                    <span class="label">Current Balance</span>
-                    <h1 id="balance-amount">CEN 0.00</h1>
-                    <div style="margin-top: 40px; display: flex; gap: 20px;">
-                        <div>
-                            <span class="label" style="font-size: 0.7rem;">Account Status</span>
-                            <p style="font-weight: 600;">Active</p>
-                        </div>
-                        <div>
-                            <span class="label" style="font-size: 0.7rem;">Currency</span>
-                            <p style="font-weight: 600;">CEN (Digital)</p>
-                        </div>
-                    </div>
-                </div>
-
-                <div class="ledger-wrapper">
-                    <div class="ledger-card">
-                        <div id="connection-status" class="status-pill">Synchronizing with Central Ledger...</div>
-                        <p style="color: #666; margin-top: 20px; font-size: 12px; letter-spacing: 1px;">TOTAL ASSETS</p>
-                        <div class="balance" id="balance">₹0.00</div>
-                        <p style="color: #888; font-size: 14px;">Account: pranshi_main</p>
-                        
-                        <div class="dark-history-list" id="history">
-                            <h4 style="color: #888; margin-bottom: 5px;">Recent Transactions (Ledger View)</h4>
-                            </div>
-                    </div>
-                </div>
-
-                <div class="card">
-                    <h3>Quick Analytics</h3>
-                    <p style="color: var(--text-sub); font-size: 0.9rem; margin-top: 10px;">
-                        Automated sync with <b>CEN_GATEWAY</b> is active.
-                    </p>
-                </div>
-            </div>
-
-            <div class="card history-section">
-                <div class="section-header">
-                    <h3>Recent Transactions</h3>
-                    <button id="refresh-btn" style="background: none; border: none; color: var(--accent); cursor: pointer; font-weight: 600;">Refresh Book</button>
-                </div>
-                
-                <div class="history-list" id="transaction-history">
-                    <p id="loading-text">Synchronizing with Central Ledger...</p>
-                </div>
-            </div>
+<div class="history-list" id="history-container">
+    <div class="label" style="margin-bottom: 15px;">Transaction History</div>
+    <div id="history-content">
         </div>
-    </div>
+</div>
 
-    <script>
-        // --- SECURE & COMPLETELY UNIFIED FIREBASE CONFIGURATION ---
-        const firebaseConfig = {
-            apiKey: "AIzaSyDL7CPrwuAw-BrIPHQuNtydc1h1g73sFVk",
-            authDomain: "centrol-bank.firebaseapp.com",
-            databaseURL: "https://centrol-bank-default-rtdb.asia-southeast1.firebasedatabase.app",
-            projectId: "centrol-bank",
-            storageBucket: "centrol-bank.firebasestorage.app",
-            messagingSenderId: "577293119465",
-            appId: "1:577293119465:web:1a6f72747c56be845ca578"
-        };
-
-        // Initialize App Instance
+<script>
+    // --- DATABASE CONFIGURATION ---
+    // Full operational matrix attached to maintain handshake stability without dropping WebSocket frames
+    const firebaseConfig = {
+        apiKey: "AIzaSyDL7CPrwuAw-BrIPHQuNtydc1h1g73sFVk",
+        authDomain: "centrol-bank.firebaseapp.com",
+        databaseURL: "https://centrol-bank-default-rtdb.asia-southeast1.firebasedatabase.app",
+        projectId: "centrol-bank",
+        storageBucket: "centrol-bank.firebasestorage.app",
+        messagingSenderId: "577293119465",
+        appId: "1:577293119465:web:1a6f72747c56be845ca578"
+    };
+    
+    // Initialize Firebase properly
+    if (!firebase.apps.length) {
         firebase.initializeApp(firebaseConfig);
-        const db = firebase.database();
-        const userId = "pranshi_main";
+    }
+    
+    const db = firebase.database();
+    const userId = "pranshi_main";
 
-        // DOM elements cache
-        const balanceDisplay = document.getElementById('balance-amount');
-        const historyContainer = document.getElementById('transaction-history');
-        const darkBalanceDisplay = document.getElementById('balance');
-        const darkHistoryContainer = document.getElementById('history');
-        const statusPill = document.getElementById('connection-status');
+    // --- LIVE DATA CONNECTORS ---
+    function initBank() {
+        const balanceDisplay = document.getElementById('balance');
+        const statusPill = document.getElementById('status');
+        const historyContent = document.getElementById('history-content');
 
-        function initUnifiedSync() {
-            const userPath = `users/${userId}`;
+        // 1. Listen for Balance Changes
+        db.ref(`users/${userId}/balance`).on('value', (snap) => {
+            const val = snap.val();
+            // Handle scientific notation and rounding
+            const formattedBal = parseFloat(val || 0).toLocaleString('en-IN', {
+                style: 'currency',
+                currency: 'INR',
+                minimumFractionDigits: 2
+            });
+            
+            balanceDisplay.innerText = formattedBal;
+            
+            // UI Update on Success
+            statusPill.innerText = "● CENTRAL LEDGER LINKED";
+            statusPill.style.color = ""; // Clear any previous dynamic error color overrides
+            statusPill.classList.add('online');
+        }, (err) => {
+            statusPill.innerText = "X SYNC FAILED";
+            statusPill.style.color = "#ff4444";
+            console.error("Firebase Error:", err);
+        });
 
-            // Sync Profile Main Nodes (Balances & Status Handshakes)
-            db.ref(userPath).on('value', (snapshot) => {
-                const data = snapshot.val();
-                
-                if (data) {
-                    // 1. Update Light Interface Balance (Animated)
-                    animateValue(balanceDisplay, parseFloat(data.balance || 0));
-
-                    // 2. Update Dark Interface Asset Display (Formatted INR Layout)
-                    darkBalanceDisplay.innerText = `₹${(parseFloat(data.balance || 0)).toLocaleString('en-IN', {minimumFractionDigits: 2})}`;
-                    
-                    // Gateway UI Pill Status Updates
-                    statusPill.innerText = "● GATEWAY ONLINE";
-                    statusPill.style.color = ""; 
-                    statusPill.classList.add('online');
-
-                    // Render Light Interface History
-                    renderLightHistory(data.history);
-                } else {
-                    // Fallback Provisioning Setup if data node is entirely fresh/missing
-                    db.ref(userPath).set({
-                        balance: 0,
-                        history: {}
-                    });
-                }
-            }, (error) => {
-                // Global Connectivity Interruption Fail-safes
-                statusPill.innerText = "X CONNECTION ERROR";
-                statusPill.style.color = "red";
-                const errorMsg = '<p style="text-align:center; color:red; margin-top:20px;">Connection failed.</p>';
-                historyContainer.innerHTML = errorMsg;
-                console.error("Database structural link failed:", error);
+        // 2. Listen for History Updates
+        db.ref(`users/${userId}/history`).limitToLast(10).on('value', (snap) => {
+            historyContent.innerHTML = '';
+            let logs = [];
+            
+            snap.forEach(child => {
+                logs.push(child.val());
             });
 
-            // Mirror Dark View Snapshot Real-time Sub-Listener (Limited to last 5 transactions)
-            db.ref(`users/${userId}/history`).limitToLast(5).on('value', (snapshot) => {
-                darkHistoryContainer.innerHTML = '<h4 style="color: #888; margin-bottom: 5px;">Recent Transactions (Ledger View)</h4>';
-                
-                const logs = [];
-                snapshot.forEach(child => { logs.push(child.val()); });
-                
-                if (logs.length === 0) {
-                    darkHistoryContainer.innerHTML += '<div class="item"><span style="color:#666;">No logs available</span></div>';
-                    return;
-                }
-
-                logs.reverse().forEach(log => {
-                    const isDebit = log.type === "DEBIT";
-                    darkHistoryContainer.innerHTML += `
-                        <div class="item">
-                            <span>${log.description || 'Transaction'}</span>
-                            <span class="${isDebit ? 'debit' : 'credit'}">
-                                ${isDebit ? '-' : '+'}${Math.abs(log.amount || 0).toFixed(2)}
-                            </span>
-                        </div>
-                    `;
-                });
-            });
-        }
-
-        // Processing View Engine rules for Light Dashboard List Layout 
-        function renderLightHistory(historyData) {
-            if (!historyData) {
-                historyContainer.innerHTML = '<p style="text-align:center; color:gray; margin-top:20px;">No transactions found.</p>';
+            if (logs.length === 0) {
+                historyContent.innerHTML = '<div style="color:#444; font-size:13px; text-align:center; padding:20px;">No transaction history available.</div>';
                 return;
             }
 
-            const historyArray = Object.values(historyData).reverse();
-            let html = '';
-
-            historyArray.forEach(tx => {
-                const isCredit = tx.type === 'CREDIT';
-                const iconClass = isCredit ? 'icon-credit' : 'icon-debit';
-                const iconSymbol = isCredit ? '↓' : '↑';
-                const sign = isCredit ? '+' : '-';
-
-                html += `
-                    <div class="transaction-item">
-                        <div class="tx-info">
-                            <div class="tx-icon ${iconClass}">${iconSymbol}</div>
-                            <div class="tx-details">
-                                <h4>${tx.description || 'Transaction'}</h4>
-                                <p>${tx.timestamp || ''}</p>
-                            </div>
+            // Show newest transactions at the top
+            logs.reverse().forEach(data => {
+                const isDebit = data.type === "DEBIT";
+                const amountClass = isDebit ? "debit" : "credit";
+                const symbol = isDebit ? "-" : "+";
+                
+                historyContent.innerHTML += `
+                    <div class="item">
+                        <div>
+                            <div style="font-size:14px; font-weight:500;">${data.description || 'Transaction'}</div>
+                            <div style="font-size:10px; color:#555;">${data.timestamp || ''}</div>
                         </div>
-                        <div class="tx-amount" style="color: ${isCredit ? 'var(--success)' : 'var(--danger)'}">
-                            ${sign}CEN ${Math.abs(tx.amount || 0).toFixed(2)}
-                        </div>
+                        <div class="${amountClass}">${symbol}₹${Math.abs(data.amount || 0).toFixed(2)}</div>
                     </div>
                 `;
             });
+        }, (err) => {
+            console.error("History sync execution failure:", err);
+        });
+    }
 
-            historyContainer.innerHTML = html;
-        }
+    // Run on Load
+    window.onload = initBank;
+</script>
 
-        // Standard Numerical Matrix Counter Animation
-        function animateValue(obj, value) {
-            let start = 0;
-            const duration = 1000;
-            const startTime = performance.now();
-
-            function update(currentTime) {
-                const elapsed = currentTime - startTime;
-                const progress = Math.min(elapsed / duration, 1);
-                const current = progress * value;
-                obj.innerHTML = `CEN ${current.toLocaleString(undefined, {minimumFractionDigits: 2})}`;
-                
-                if (progress < 1) {
-                    requestAnimationFrame(update);
-                }
-            }
-            requestAnimationFrame(update);
-        }
-
-        // Initialize Global Hub
-        initUnifiedSync();
-    </script>
 </body>
 </html>
