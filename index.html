@@ -1,0 +1,364 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>CENTROL | Digital Banking</title>
+    <!-- Google Fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;600;700&display=swap" rel="stylesheet">
+    <!-- Firebase Legacy SDKs for maximum compatibility -->
+    <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-database-compat.js"></script>
+    
+    <style>
+        :root {
+            --bg: #f8fafc;
+            --surface: #ffffff;
+            --primary: #1e293b;
+            --accent: #3b82f6;
+            --text-main: #0f172a;
+            --text-sub: #64748b;
+            --success: #22c55e;
+            --danger: #ef4444;
+            --shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.05), 0 8px 10px -6px rgba(0, 0, 0, 0.05);
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Plus Jakarta Sans', sans-serif;
+        }
+
+        body {
+            background-color: var(--bg);
+            color: var(--text-main);
+            display: flex;
+            justify-content: center;
+            min-height: 100vh;
+            padding: 20px;
+        }
+
+        .app-container {
+            width: 100%;
+            max-width: 1100px;
+            animation: fadeIn 0.6s ease-out;
+        }
+
+        /* --- NAVIGATION --- */
+        nav {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 20px 0;
+            margin-bottom: 30px;
+        }
+
+        .logo {
+            font-size: 1.5rem;
+            font-weight: 800;
+            letter-spacing: -1px;
+            color: var(--primary);
+        }
+
+        .logo span {
+            font-weight: 300;
+            color: var(--text-sub);
+        }
+
+        /* --- DASHBOARD GRID --- */
+        .dashboard-grid {
+            display: grid;
+            grid-template-columns: 1fr 1.5fr;
+            gap: 30px;
+        }
+
+        /* --- CARD STYLES --- */
+        .card {
+            background: var(--surface);
+            border-radius: 24px;
+            padding: 30px;
+            box-shadow: var(--shadow);
+            border: 1px solid rgba(255, 255, 255, 0.7);
+        }
+
+        .balance-card {
+            background: linear-gradient(135deg, #1e293b 0%, #334155 100%);
+            color: white;
+            position: relative;
+            overflow: hidden;
+            transition: transform 0.3s ease;
+        }
+
+        .balance-card:hover {
+            transform: translateY(-5px);
+        }
+
+        .balance-card::after {
+            content: '';
+            position: absolute;
+            top: -50px;
+            right: -50px;
+            width: 150px;
+            height: 150px;
+            background: rgba(255, 255, 255, 0.05);
+            border-radius: 50%;
+        }
+
+        .label {
+            font-size: 0.9rem;
+            opacity: 0.7;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            margin-bottom: 10px;
+            display: block;
+        }
+
+        .total-balance {
+            font-size: 2.8rem;
+            font-weight: 700;
+            margin-bottom: 20px;
+        }
+
+        /* --- TRANSACTION HISTORY --- */
+        .history-section {
+            height: 600px;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .section-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+        }
+
+        .history-list {
+            flex-grow: 1;
+            overflow-y: auto;
+            padding-right: 10px;
+        }
+
+        .history-list::-webkit-scrollbar {
+            width: 5px;
+        }
+
+        .history-list::-webkit-scrollbar-thumb {
+            background: #e2e8f0;
+            border-radius: 10px;
+        }
+
+        .transaction-item {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 15px;
+            border-radius: 16px;
+            margin-bottom: 12px;
+            transition: background 0.2s;
+            border: 1px solid transparent;
+        }
+
+        .transaction-item:hover {
+            background: #f1f5f9;
+            border-color: #e2e8f0;
+        }
+
+        .tx-info {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+        }
+
+        .tx-icon {
+            width: 45px;
+            height: 45px;
+            border-radius: 12px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.2rem;
+        }
+
+        .icon-credit { background: #dcfce7; color: var(--success); }
+        .icon-debit { background: #fee2e2; color: var(--danger); }
+
+        .tx-details h4 {
+            font-size: 1rem;
+            margin-bottom: 2px;
+        }
+
+        .tx-details p {
+            font-size: 0.8rem;
+            color: var(--text-sub);
+        }
+
+        .tx-amount {
+            font-weight: 700;
+            font-size: 1.1rem;
+        }
+
+        /* --- ANIMATIONS --- */
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        /* --- RESPONSIVE --- */
+        @media (max-width: 850px) {
+            .dashboard-grid {
+                grid-template-columns: 1fr;
+            }
+        }
+    </style>
+</head>
+<body>
+
+    <div class="app-container">
+        <nav>
+            <div class="logo">CENTROL<span>BANK</span></div>
+            <div id="user-display" style="font-weight: 600;">Welcome, Pranshi</div>
+        </nav>
+
+        <div class="dashboard-grid">
+            <!-- Left Side: Balance & Quick Stats -->
+            <div class="side-panel">
+                <div class="card balance-card">
+                    <span class="label">Current Balance</span>
+                    <h1 id="balance-amount">CEN 0.00</h1>
+                    <div style="margin-top: 40px; display: flex; gap: 20px;">
+                        <div>
+                            <span class="label" style="font-size: 0.7rem;">Account Status</span>
+                            <p style="font-weight: 600;">Active</p>
+                        </div>
+                        <div>
+                            <span class="label" style="font-size: 0.7rem;">Currency</span>
+                            <p style="font-weight: 600;">CEN (Digital)</p>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="card" style="margin-top: 25px;">
+                    <h3>Quick Analytics</h3>
+                    <p style="color: var(--text-sub); font-size: 0.9rem; margin-top: 10px;">
+                        Automated sync with <b>CEN_GATEWAY</b> is active.
+                    </p>
+                </div>
+            </div>
+
+            <!-- Right Side: Transactions -->
+            <div class="card history-section">
+                <div class="section-header">
+                    <h3>Recent Transactions</h3>
+                    <button id="refresh-btn" style="background: none; border: none; color: var(--accent); cursor: pointer; font-weight: 600;">Refresh Book</button>
+                </div>
+                
+                <div class="history-list" id="transaction-history">
+                    <!-- Transactions injected here -->
+                    <p id="loading-text">Synchronizing with Central Ledger...</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // FIREBASE CONFIGURATION
+        const firebaseConfig = {
+            apiKey: "AIzaSyDL7CPrwuAw-BrIPHQuNtydc1h1g73sFVk",
+            authDomain: "centrol-bank.firebaseapp.com",
+            databaseURL: "https://centrol-bank-default-rtdb.asia-southeast1.firebasedatabase.app",
+            projectId: "centrol-bank",
+            storageBucket: "centrol-bank.firebasestorage.app",
+            messagingSenderId: "577293119465",
+            appId: "1:577293119465:web:1a6f72747c56be845ca578"
+        };
+
+        // Initialize Firebase
+        firebase.initializeApp(firebaseConfig);
+        const db = firebase.database();
+
+        // DOM Elements
+        const balanceDisplay = document.getElementById('balance-amount');
+        const historyContainer = document.getElementById('transaction-history');
+
+        // Real-time listener for user data
+        function initBank() {
+            const userPath = 'users/pranshi_main';
+            
+            db.ref(userPath).on('value', (snapshot) => {
+                const data = snapshot.val();
+                
+                if (data) {
+                    // Update Balance with Animation
+                    animateValue(balanceDisplay, parseFloat(data.balance || 0));
+                    
+                    // Update History
+                    renderHistory(data.history);
+                } else {
+                    // Initialize new account if empty
+                    db.ref(userPath).set({
+                        balance: 0,
+                        history: {}
+                    });
+                }
+            });
+        }
+
+        function renderHistory(historyData) {
+            if (!historyData) {
+                historyContainer.innerHTML = '<p style="text-align:center; color:gray; margin-top:20px;">No transactions found.</p>';
+                return;
+            }
+
+            const historyArray = Object.values(historyData).reverse();
+            let html = '';
+
+            historyArray.forEach(tx => {
+                const isCredit = tx.type === 'CREDIT';
+                const iconClass = isCredit ? 'icon-credit' : 'icon-debit';
+                const iconSymbol = isCredit ? '↓' : '↑';
+                const sign = isCredit ? '+' : '-';
+
+                html += `
+                    <div class="transaction-item">
+                        <div class="tx-info">
+                            <div class="tx-icon ${iconClass}">${iconSymbol}</div>
+                            <div class="tx-details">
+                                <h4>${tx.description}</h4>
+                                <p>${tx.timestamp}</p>
+                            </div>
+                        </div>
+                        <div class="tx-amount" style="color: ${isCredit ? 'var(--success)' : 'var(--danger)'}">
+                            ${sign}CEN ${Math.abs(tx.amount).toFixed(2)}
+                        </div>
+                    </div>
+                `;
+            });
+
+            historyContainer.innerHTML = html;
+        }
+
+        function animateValue(obj, value) {
+            let start = 0;
+            const duration = 1000;
+            const startTime = performance.now();
+
+            function update(currentTime) {
+                const elapsed = currentTime - startTime;
+                const progress = Math.min(elapsed / duration, 1);
+                const current = progress * value;
+                obj.innerHTML = `CEN ${current.toLocaleString(undefined, {minimumFractionDigits: 2})}`;
+                
+                if (progress < 1) {
+                    requestAnimationFrame(update);
+                }
+            }
+            requestAnimationFrame(update);
+        }
+
+        // Run
+        initBank();
+    </script>
+</body>
+</html>
