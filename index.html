@@ -4,14 +4,15 @@
     <meta charset="UTF-8">
     <meta http-equiv="Content-Security-Policy" content="script-src 'self' 'unsafe-inline' 'unsafe-eval' https://www.gstatic.com https://apis.google.com;">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>CENTROL | Digital Banking</title>
-    <!-- Google Fonts -->
+    <title>CENTROL | Unified Banking Hub</title>
+    
     <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;600;700&display=swap" rel="stylesheet">
-    <!-- Firebase Legacy SDKs for maximum compatibility -->
+    
     <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-database-compat.js"></script>
     
     <style>
+        /* --- STYLES FROM FILE 1 (LIGHT DASHBOARD) --- */
         :root {
             --bg: #f8fafc;
             --surface: #ffffff;
@@ -22,6 +23,10 @@
             --success: #22c55e;
             --danger: #ef4444;
             --shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.05), 0 8px 10px -6px rgba(0, 0, 0, 0.05);
+            
+            /* File 2 root variables encapsulated */
+            --dark-accent: #00ff88; 
+            --dark-bg: #0a0a0a;
         }
 
         * {
@@ -42,11 +47,10 @@
 
         .app-container {
             width: 100%;
-            max-width: 1100px;
+            max-width: 1200px;
             animation: fadeIn 0.6s ease-out;
         }
 
-        /* --- NAVIGATION --- */
         nav {
             display: flex;
             justify-content: space-between;
@@ -67,14 +71,19 @@
             color: var(--text-sub);
         }
 
-        /* --- DASHBOARD GRID --- */
         .dashboard-grid {
             display: grid;
-            grid-template-columns: 1fr 1.5fr;
+            grid-template-columns: 1fr 1.2fr;
             gap: 30px;
+            align-items: start;
         }
 
-        /* --- CARD STYLES --- */
+        .left-column {
+            display: flex;
+            flex-direction: column;
+            gap: 25px;
+        }
+
         .card {
             background: var(--surface);
             border-radius: 24px;
@@ -115,13 +124,6 @@
             display: block;
         }
 
-        .total-balance {
-            font-size: 2.8rem;
-            font-weight: 700;
-            margin-bottom: 20px;
-        }
-
-        /* --- TRANSACTION HISTORY --- */
         .history-section {
             height: 600px;
             display: flex;
@@ -185,28 +187,38 @@
         .icon-credit { background: #dcfce7; color: var(--success); }
         .icon-debit { background: #fee2e2; color: var(--danger); }
 
-        .tx-details h4 {
-            font-size: 1rem;
-            margin-bottom: 2px;
-        }
+        .tx-details h4 { font-size: 1rem; margin-bottom: 2px; }
+        .tx-details p { font-size: 0.8rem; color: var(--text-sub); }
+        .tx-amount { font-weight: 700; font-size: 1.1rem; }
 
-        .tx-details p {
-            font-size: 0.8rem;
-            color: var(--text-sub);
+        /* --- STYLES FROM FILE 2 (DARK CENTRAL LEDGER CARD) --- */
+        .ledger-wrapper {
+            margin-top: 10px;
+            text-align: center;
         }
-
-        .tx-amount {
-            font-weight: 700;
-            font-size: 1.1rem;
+        .ledger-card { 
+            background: var(--dark-bg); 
+            color: white;
+            border: 1px solid #222; 
+            padding: 30px; 
+            border-radius: 20px; 
+            max-width: 100%; 
+            margin: 0 auto;
+            box-shadow: 0 20px 40px rgba(0,0,0,0.2);
         }
+        .balance { font-size: 3rem; font-weight: bold; color: var(--dark-accent); margin: 10px 0; font-family: 'Segoe UI', sans-serif; }
+        .status-pill { padding: 5px 15px; border-radius: 50px; font-size: 12px; background: #222; color: #888; display: inline-block; font-family: 'Segoe UI', sans-serif; }
+        .online { color: var(--dark-accent); border: 1px solid var(--dark-accent); }
+        .dark-history-list { text-align: left; max-width: 100%; margin: 20px auto 0 auto; font-size: 14px; font-family: 'Segoe UI', sans-serif; }
+        .item { padding: 10px; border-bottom: 1px solid #222; display: flex; justify-content: space-between; }
+        .debit { color: #ff4444; }
+        .credit { color: var(--dark-accent); }
 
-        /* --- ANIMATIONS --- */
         @keyframes fadeIn {
             from { opacity: 0; transform: translateY(20px); }
             to { opacity: 1; transform: translateY(0); }
         }
 
-        /* --- RESPONSIVE --- */
         @media (max-width: 850px) {
             .dashboard-grid {
                 grid-template-columns: 1fr;
@@ -223,8 +235,8 @@
         </nav>
 
         <div class="dashboard-grid">
-            <!-- Left Side: Balance & Quick Stats -->
-            <div class="side-panel">
+            <div class="left-column">
+                
                 <div class="card balance-card">
                     <span class="label">Current Balance</span>
                     <h1 id="balance-amount">CEN 0.00</h1>
@@ -240,7 +252,20 @@
                     </div>
                 </div>
 
-                <div class="card" style="margin-top: 25px;">
+                <div class="ledger-wrapper">
+                    <div class="ledger-card">
+                        <div id="connection-status" class="status-pill">Synchronizing with Central Ledger...</div>
+                        <p style="color: #666; margin-top: 20px; font-size: 12px; letter-spacing: 1px;">TOTAL ASSETS</p>
+                        <div class="balance" id="balance">₹0.00</div>
+                        <p style="color: #888; font-size: 14px;">Account: pranshi_main</p>
+                        
+                        <div class="dark-history-list" id="history">
+                            <h4 style="color: #888; margin-bottom: 5px;">Recent Transactions (Ledger View)</h4>
+                            </div>
+                    </div>
+                </div>
+
+                <div class="card">
                     <h3>Quick Analytics</h3>
                     <p style="color: var(--text-sub); font-size: 0.9rem; margin-top: 10px;">
                         Automated sync with <b>CEN_GATEWAY</b> is active.
@@ -248,7 +273,6 @@
                 </div>
             </div>
 
-            <!-- Right Side: Transactions -->
             <div class="card history-section">
                 <div class="section-header">
                     <h3>Recent Transactions</h3>
@@ -256,7 +280,6 @@
                 </div>
                 
                 <div class="history-list" id="transaction-history">
-                    <!-- Transactions injected here -->
                     <p id="loading-text">Synchronizing with Central Ledger...</p>
                 </div>
             </div>
@@ -264,7 +287,7 @@
     </div>
 
     <script>
-        // FIREBASE CONFIGURATION
+        // --- SECURE & COMPLETELY UNIFIED FIREBASE CONFIGURATION ---
         const firebaseConfig = {
             apiKey: "AIzaSyDL7CPrwuAw-BrIPHQuNtydc1h1g73sFVk",
             authDomain: "centrol-bank.firebaseapp.com",
@@ -275,38 +298,83 @@
             appId: "1:577293119465:web:1a6f72747c56be845ca578"
         };
 
-        // Initialize Firebase
+        // Initialize App Instance
         firebase.initializeApp(firebaseConfig);
         const db = firebase.database();
+        const userId = "pranshi_main";
 
-        // DOM Elements
+        // DOM elements cache
         const balanceDisplay = document.getElementById('balance-amount');
         const historyContainer = document.getElementById('transaction-history');
+        const darkBalanceDisplay = document.getElementById('balance');
+        const darkHistoryContainer = document.getElementById('history');
+        const statusPill = document.getElementById('connection-status');
 
-        // Real-time listener for user data
-        function initBank() {
-            const userPath = 'users/pranshi_main';
-            
+        function initUnifiedSync() {
+            const userPath = `users/${userId}`;
+
+            // Sync Profile Main Nodes (Balances & Status Handshakes)
             db.ref(userPath).on('value', (snapshot) => {
                 const data = snapshot.val();
                 
                 if (data) {
-                    // Update Balance with Animation
+                    // 1. Update Light Interface Balance (Animated)
                     animateValue(balanceDisplay, parseFloat(data.balance || 0));
+
+                    // 2. Update Dark Interface Asset Display (Formatted INR Layout)
+                    darkBalanceDisplay.innerText = `₹${(parseFloat(data.balance || 0)).toLocaleString('en-IN', {minimumFractionDigits: 2})}`;
                     
-                    // Update History
-                    renderHistory(data.history);
+                    // Gateway UI Pill Status Updates
+                    statusPill.innerText = "● GATEWAY ONLINE";
+                    statusPill.style.color = ""; 
+                    statusPill.classList.add('online');
+
+                    // Render Light Interface History
+                    renderLightHistory(data.history);
                 } else {
-                    // Initialize new account if empty
+                    // Fallback Provisioning Setup if data node is entirely fresh/missing
                     db.ref(userPath).set({
                         balance: 0,
                         history: {}
                     });
                 }
+            }, (error) => {
+                // Global Connectivity Interruption Fail-safes
+                statusPill.innerText = "X CONNECTION ERROR";
+                statusPill.style.color = "red";
+                const errorMsg = '<p style="text-align:center; color:red; margin-top:20px;">Connection failed.</p>';
+                historyContainer.innerHTML = errorMsg;
+                console.error("Database structural link failed:", error);
+            });
+
+            // Mirror Dark View Snapshot Real-time Sub-Listener (Limited to last 5 transactions)
+            db.ref(`users/${userId}/history`).limitToLast(5).on('value', (snapshot) => {
+                darkHistoryContainer.innerHTML = '<h4 style="color: #888; margin-bottom: 5px;">Recent Transactions (Ledger View)</h4>';
+                
+                const logs = [];
+                snapshot.forEach(child => { logs.push(child.val()); });
+                
+                if (logs.length === 0) {
+                    darkHistoryContainer.innerHTML += '<div class="item"><span style="color:#666;">No logs available</span></div>';
+                    return;
+                }
+
+                logs.reverse().forEach(log => {
+                    const isDebit = log.type === "DEBIT";
+                    darkHistoryContainer.innerHTML += `
+                        <div class="item">
+                            <span>${log.description || 'Transaction'}</span>
+                            <span class="${isDebit ? 'debit' : 'credit'}">
+                                ${isDebit ? '-' : '+'}${Math.abs(log.amount || 0).toFixed(2)}
+                            </span>
+                        </div>
+                    `;
+                });
             });
         }
 
-        function renderHistory(historyData) {
+        // Processing View Engine rules for Light Dashboard List Layout 
+        function renderLightHistory(historyData) {
             if (!historyData) {
                 historyContainer.innerHTML = '<p style="text-align:center; color:gray; margin-top:20px;">No transactions found.</p>';
                 return;
@@ -326,12 +394,12 @@
                         <div class="tx-info">
                             <div class="tx-icon ${iconClass}">${iconSymbol}</div>
                             <div class="tx-details">
-                                <h4>${tx.description}</h4>
-                                <p>${tx.timestamp}</p>
+                                <h4>${tx.description || 'Transaction'}</h4>
+                                <p>${tx.timestamp || ''}</p>
                             </div>
                         </div>
                         <div class="tx-amount" style="color: ${isCredit ? 'var(--success)' : 'var(--danger)'}">
-                            ${sign}CEN ${Math.abs(tx.amount).toFixed(2)}
+                            ${sign}CEN ${Math.abs(tx.amount || 0).toFixed(2)}
                         </div>
                     </div>
                 `;
@@ -340,6 +408,7 @@
             historyContainer.innerHTML = html;
         }
 
+        // Standard Numerical Matrix Counter Animation
         function animateValue(obj, value) {
             let start = 0;
             const duration = 1000;
@@ -358,8 +427,8 @@
             requestAnimationFrame(update);
         }
 
-        // Run
-        initBank();
+        // Initialize Global Hub
+        initUnifiedSync();
     </script>
 </body>
 </html>
