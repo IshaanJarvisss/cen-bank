@@ -1,427 +1,853 @@
 <!DOCTYPE html>
+
 <html lang="en">
 <head>
     <meta charset="UTF-8">
     <meta http-equiv="Content-Security-Policy" content="script-src 'self' 'unsafe-inline' 'unsafe-eval' https://www.gstatic.com https://apis.google.com;">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>CENTROL | Digital Banking Hub</title>
-    
-    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
-    
-    <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-app-compat.js"></script>
-    <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-database-compat.js"></script>
-    
-    <style>
-        :root {
-            --bg: #090d16;
-            --surface: rgba(17, 24, 39, 0.7);
-            --primary: #ffffff;
-            --accent: #3b82f6;
-            --dark-accent: #00ff88;
-            --text-main: #f1f5f9;
-            --text-sub: #94a3b8;
-            --success: #10b981;
-            --danger: #ef4444;
-            --border: rgba(255, 255, 255, 0.08);
-            --shadow: 0 20px 40px -15px rgba(0, 0, 0, 0.5);
+
+```
+<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+
+<script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-database-compat.js"></script>
+
+<style>
+    :root {
+        --bg: #090d16;
+        --surface: rgba(17, 24, 39, 0.7);
+        --primary: #ffffff;
+        --accent: #3b82f6;
+        --dark-accent: #00ff88;
+        --text-main: #f1f5f9;
+        --text-sub: #94a3b8;
+        --success: #10b981;
+        --danger: #ef4444;
+        --border: rgba(255, 255, 255, 0.08);
+        --shadow: 0 20px 40px -15px rgba(0, 0, 0, 0.5);
+    }
+
+    * {
+        margin: 0;
+        padding: 0;
+        box-sizing: border-box;
+        font-family: 'Plus Jakarta Sans', sans-serif;
+    }
+
+    body {
+        background-color: var(--bg);
+        background-image:
+            radial-gradient(at 0% 0%, rgba(59, 130, 246, 0.15) 0px, transparent 50%),
+            radial-gradient(at 100% 100%, rgba(0, 255, 136, 0.1) 0px, transparent 50%);
+        background-attachment: fixed;
+        color: var(--text-main);
+        display: flex;
+        justify-content: center;
+        min-height: 100vh;
+        padding: 20px;
+    }
+
+    .app-container {
+        width: 100%;
+        max-width: 1200px;
+        animation: fadeIn 0.6s cubic-bezier(0.16, 1, 0.3, 1);
+    }
+
+    nav {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        padding: 20px 10px;
+        margin-bottom: 25px;
+        border-bottom: 1px solid var(--border);
+    }
+
+    .logo {
+        font-size: 1.5rem;
+        font-weight: 800;
+        letter-spacing: -1px;
+        color: var(--primary);
+    }
+
+    .logo span {
+        font-weight: 300;
+        color: var(--text-sub);
+    }
+
+    .dashboard-grid {
+        display: grid;
+        grid-template-columns: 1fr 1.2fr;
+        gap: 25px;
+        align-items: start;
+    }
+
+    .left-column {
+        display: flex;
+        flex-direction: column;
+        gap: 25px;
+    }
+
+    .card {
+        background: var(--surface);
+        backdrop-filter: blur(16px) saturate(120%);
+        -webkit-backdrop-filter: blur(16px) saturate(120%);
+        border-radius: 24px;
+        padding: 30px;
+        box-shadow: var(--shadow);
+        border: 1px solid var(--border);
+        transition: transform 0.3s ease, border-color 0.3s ease;
+    }
+
+    .card:hover {
+        border-color: rgba(255, 255, 255, 0.15);
+    }
+
+    .balance-card {
+        background: linear-gradient(135deg, #1e293b 0%, #0f172a 100%);
+        color: white;
+        position: relative;
+        overflow: hidden;
+        border: 1px solid rgba(59, 130, 246, 0.2);
+    }
+
+    .balance-card:hover {
+        transform: translateY(-4px);
+    }
+
+    .balance-card::after {
+        content: '';
+        position: absolute;
+        top: -40px;
+        right: -40px;
+        width: 160px;
+        height: 160px;
+        background: radial-gradient(circle, rgba(59, 130, 246, 0.2) 0%, transparent 70%);
+        border-radius: 50%;
+    }
+
+    .label {
+        font-size: 0.8rem;
+        color: var(--text-sub);
+        text-transform: uppercase;
+        letter-spacing: 1.5px;
+        font-weight: 600;
+        margin-bottom: 8px;
+        display: block;
+    }
+
+    .total-balance-text {
+        font-size: 2.6rem;
+        font-weight: 800;
+        letter-spacing: -1px;
+        margin-bottom: 20px;
+        background: linear-gradient(to right, #ffffff, #e2e8f0);
+        -webkit-background-clip: text;
+        -webkit-text-fill-color: transparent;
+    }
+
+    .status-pill {
+        display: inline-block;
+        padding: 6px 14px;
+        border-radius: 50px;
+        font-size: 10px;
+        font-weight: 700;
+        background: #111827;
+        color: #64748b;
+        border: 1px solid #1f2937;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+        margin-bottom: 12px;
+        align-self: flex-start;
+        width: fit-content;
+    }
+
+    .status-pill.online {
+        color: var(--dark-accent);
+        border-color: rgba(0, 255, 136, 0.3);
+        background: rgba(0, 255, 136, 0.04);
+    }
+
+    .history-section {
+        height: 600px;
+        display: flex;
+        flex-direction: column;
+    }
+
+    .section-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 20px;
+        padding-bottom: 15px;
+        border-bottom: 1px solid var(--border);
+    }
+
+    .history-list {
+        flex-grow: 1;
+        overflow-y: auto;
+        padding-right: 8px;
+    }
+
+    .history-list::-webkit-scrollbar {
+        width: 6px;
+    }
+
+    .history-list::-webkit-scrollbar-thumb {
+        background: rgba(255, 255, 255, 0.1);
+        border-radius: 10px;
+    }
+
+    .transaction-item {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        padding: 16px;
+        border-radius: 16px;
+        margin-bottom: 12px;
+        background: rgba(255, 255, 255, 0.02);
+        border: 1px solid var(--border);
+        transition: background 0.2s, transform 0.2s;
+    }
+
+    .transaction-item:hover {
+        background: rgba(255, 255, 255, 0.04);
+        transform: translateX(2px);
+    }
+
+    .tx-info {
+        display: flex;
+        align-items: center;
+        gap: 15px;
+    }
+
+    .tx-icon {
+        width: 42px;
+        height: 42px;
+        border-radius: 12px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 1.1rem;
+        font-weight: 700;
+    }
+
+    .icon-credit {
+        background: rgba(16, 185, 129, 0.15);
+        color: var(--success);
+        border: 1px solid rgba(16, 185, 129, 0.2);
+    }
+
+    .icon-debit {
+        background: rgba(239, 68, 68, 0.15);
+        color: var(--danger);
+        border: 1px solid rgba(239, 68, 68, 0.2);
+    }
+
+    .tx-details h4 {
+        font-size: 0.95rem;
+        font-weight: 600;
+        color: #f8fafc;
+        margin-bottom: 2px;
+    }
+
+    .tx-details p {
+        font-size: 0.75rem;
+        color: var(--text-sub);
+    }
+
+    .tx-amount {
+        font-weight: 700;
+        font-size: 1.05rem;
+        letter-spacing: -0.5px;
+    }
+
+    @keyframes fadeIn {
+        from {
+            opacity: 0;
+            transform: translateY(15px);
         }
 
-        * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
-            font-family: 'Plus Jakarta Sans', sans-serif;
+        to {
+            opacity: 1;
+            transform: translateY(0);
         }
+    }
 
+    @media (max-width: 900px) {
         body {
-            background-color: var(--bg);
-            background-image: 
-                radial-gradient(at 0% 0%, rgba(59, 130, 246, 0.15) 0px, transparent 50%),
-                radial-gradient(at 100% 100%, rgba(0, 255, 136, 0.1) 0px, transparent 50%);
-            background-attachment: fixed;
-            color: var(--text-main);
-            display: flex;
-            justify-content: center;
-            min-height: 100vh;
-            padding: 20px;
+            padding: 12px;
         }
 
-        .app-container {
-            width: 100%;
-            max-width: 1200px;
-            animation: fadeIn 0.6s cubic-bezier(0.16, 1, 0.3, 1);
-        }
-
-        /* --- NAVIGATION --- */
-        nav {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            padding: 20px 10px;
-            margin-bottom: 25px;
-            border-bottom: 1px solid var(--border);
-        }
-
-        .logo {
-            font-size: 1.5rem;
-            font-weight: 800;
-            letter-spacing: -1px;
-            color: var(--primary);
-        }
-
-        .logo span {
-            font-weight: 300;
-            color: var(--text-sub);
-        }
-
-        /* --- DASHBOARD RESPONSIVE GRID --- */
         .dashboard-grid {
-            display: grid;
-            grid-template-columns: 1fr 1.2fr;
-            gap: 25px;
-            align-items: start;
-        }
-
-        .left-column {
-            display: flex;
-            flex-direction: column;
-            gap: 25px;
-        }
-
-        /* --- CARD BASE STYLING (GLASSMORPHISM) --- */
-        .card {
-            background: var(--surface);
-            backdrop-filter: blur(16px) saturate(120%);
-            -webkit-backdrop-filter: blur(16px) saturate(120%);
-            border-radius: 24px;
-            padding: 30px;
-            box-shadow: var(--shadow);
-            border: 1px solid var(--border);
-            transition: transform 0.3s ease, border-color 0.3s ease;
-        }
-
-        .card:hover {
-            border-color: rgba(255, 255, 255, 0.15);
-        }
-
-        /* --- DIGITAL WALLET CARD --- */
-        .balance-card {
-            background: linear-gradient(135deg, #1e293b 0%, #0f172a 100%);
-            color: white;
-            position: relative;
-            overflow: hidden;
-            border: 1px solid rgba(59, 130, 246, 0.2);
-        }
-
-        .balance-card:hover {
-            transform: translateY(-4px);
-        }
-
-        .balance-card::after {
-            content: '';
-            position: absolute;
-            top: -40px;
-            right: -40px;
-            width: 160px;
-            height: 160px;
-            background: radial-gradient(circle, rgba(59, 130, 246, 0.2) 0%, transparent 70%);
-            border-radius: 50%;
-        }
-
-        .label {
-            font-size: 0.8rem;
-            color: var(--text-sub);
-            text-transform: uppercase;
-            letter-spacing: 1.5px;
-            font-weight: 600;
-            margin-bottom: 8px;
-            display: block;
+            grid-template-columns: 1fr;
+            gap: 20px;
         }
 
         .total-balance-text {
-            font-size: 2.6rem;
-            font-weight: 800;
-            letter-spacing: -1px;
-            margin-bottom: 20px;
-            background: linear-gradient(to right, #ffffff, #e2e8f0);
-            -webkit-background-clip: text;
-            -webkit-text-fill-color: transparent;
+            font-size: 2.2rem;
         }
 
-        /* --- SYSTEM STATUS PILL --- */
-        .status-pill { 
-            display: inline-block; 
-            padding: 6px 14px; 
-            border-radius: 50px; 
-            font-size: 10px; 
-            font-weight: 700; 
-            background: #111827; 
-            color: #64748b; 
-            border: 1px solid #1f2937; 
-            text-transform: uppercase;
-            letter-spacing: 0.5px;
-            margin-bottom: 12px;
-            align-self: flex-start;
-            width: fit-content;
+        .card {
+            padding: 22px;
         }
 
-        .status-pill.online { 
-            color: var(--dark-accent); 
-            border-color: rgba(0, 255, 136, 0.3); 
-            background: rgba(0, 255, 136, 0.04);
-        }
-
-        /* --- TRANSACTION SYSTEM OVERVIEW --- */
         .history-section {
-            height: 600px;
-            display: flex;
-            flex-direction: column;
+            height: 520px;
         }
+    }
+</style>
+```
 
-        .section-header {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            margin-bottom: 20px;
-            padding-bottom: 15px;
-            border-bottom: 1px solid var(--border);
-        }
-
-        .history-list {
-            flex-grow: 1;
-            overflow-y: auto;
-            padding-right: 8px;
-        }
-
-        .history-list::-webkit-scrollbar {
-            width: 6px;
-        }
-
-        .history-list::-webkit-scrollbar-thumb {
-            background: rgba(255, 255, 255, 0.1);
-            border-radius: 10px;
-        }
-
-        .transaction-item {
-            display: flex;
-            align-items: center;
-            justify-content: space-between;
-            padding: 16px;
-            border-radius: 16px;
-            margin-bottom: 12px;
-            background: rgba(255, 255, 255, 0.02);
-            border: 1px solid var(--border);
-            transition: background 0.2s, transform 0.2s;
-        }
-
-        .transaction-item:hover {
-            background: rgba(255, 255, 255, 0.04);
-            transform: translateX(2px);
-        }
-
-        .tx-info {
-            display: flex;
-            align-items: center;
-            gap: 15px;
-        }
-
-        .tx-icon {
-            width: 42px;
-            height: 42px;
-            border-radius: 12px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            font-size: 1.1rem;
-            font-weight: 700;
-        }
-
-        .icon-credit { background: rgba(16, 185, 129, 0.15); color: var(--success); border: 1px solid rgba(16, 185, 129, 0.2); }
-        .icon-debit { background: rgba(239, 68, 68, 0.15); color: var(--danger); border: 1px solid rgba(239, 68, 68, 0.2); }
-
-        .tx-details h4 { font-size: 0.95rem; font-weight: 600; color: #f8fafc; margin-bottom: 2px; }
-        .tx-details p { font-size: 0.75rem; color: var(--text-sub); }
-        .tx-amount { font-weight: 700; font-size: 1.05rem; letter-spacing: -0.5px; }
-
-        @keyframes fadeIn {
-            from { opacity: 0; transform: translateY(15px); }
-            to { opacity: 1; transform: translateY(0); }
-        }
-
-        /* --- RESPONSIVE BREAKPOINTS (MOBILE AND DESKTOP FIXES) --- */
-        @media (max-width: 900px) {
-            body { padding: 12px; }
-            .dashboard-grid { grid-template-columns: 1fr; gap: 20px; }
-            .total-balance-text { font-size: 2.2rem; }
-            .card { padding: 22px; }
-            .history-section { height: 520px; }
-        }
-    </style>
 </head>
+
 <body>
 
-    <div class="app-container">
-        <nav>
-            <div class="logo">CENTROL<span>BANK</span></div>
-            <div id="user-display" style="font-weight: 600; color: var(--text-sub); font-size: 0.95rem;">Welcome, Pranshi</div>
-        </nav>
-
-        <div class="dashboard-grid">
-            <div class="left-column">
-                
-                <div class="card balance-card">
-                    <span class="label">Current Balance</span>
-                    <h1 id="balance-amount" class="total-balance-text">CEN 0.00</h1>
-                    <div style="margin-top: 30px; display: flex; gap: 25px;">
-                        <div>
-                            <span class="label" style="font-size: 0.65rem;">Account Status</span>
-                            <p style="font-weight: 600; font-size: 0.9rem; color: #f8fafc;">Active</p>
-                        </div>
-                        <div>
-                            <span class="label" style="font-size: 0.65rem;">Currency</span>
-                            <p style="font-weight: 600; font-size: 0.9rem; color: #f8fafc;">CEN (Digital)</p>
-                        </div>
-                    </div>
-                </div>
-
-                <div class="card" style="display: flex; flex-direction: column;">
-                    <div id="connection-status" class="status-pill">Synchronizing Ledger...</div>
-                    <h3 style="font-size: 1.1rem; font-weight: 700; margin-bottom: 8px; margin-top: 5px;">System Security</h3>
-                    <p style="color: var(--text-sub); font-size: 0.85rem; line-height: 1.5; margin-bottom: 15px;">
-                        Automated sync handshake securely active with <b>CEN_GATEWAY</b>.
-                    </p>
-                    <div style="border-top: 1px solid var(--border); padding-top: 12px; font-size: 12px; color: var(--text-sub);">
-                        <b>Account ID:</b> <span style="font-family: monospace; color: #e2e8f0;">pranshi_main</span>
-                    </div>
-                </div>
-            </div>
-
-            <div class="card history-section">
-                <div class="section-header">
-                    <h3 style="font-size: 1.2rem; font-weight: 700;">Recent Transactions</h3>
-                    <button id="refresh-btn" style="background: none; border: none; color: var(--accent); cursor: pointer; font-weight: 700; font-size: 0.85rem; letter-spacing: 0.5px;">REFRESH</button>
-                </div>
-                
-                <div class="history-list" id="transaction-history">
-                    <p id="loading-text" style="color: var(--text-sub); font-size: 0.9rem; text-align: center; margin-top: 30px;">Connecting to ledger nodes...</p>
-                </div>
-            </div>
+```
+<div class="app-container">
+    <nav>
+        <div class="logo">CENTROL<span>BANK</span></div>
+        <div id="user-display"
+            style="font-weight: 600; color: var(--text-sub); font-size: 0.95rem;">
+            Welcome, Pranshi
         </div>
-    </div>
+    </nav>
 
-    <script>
-        // --- REAL-TIME DATA HUB INTERNALS ---
-        const firebaseConfig = {
-            apiKey: "AIzaSyDL7CPrwuAw-BrIPHQuNtydc1h1g73sFVk",
-            authDomain: "centrol-bank.firebaseapp.com",
-            databaseURL: "https://centrol-bank-default-rtdb.asia-southeast1.firebasedatabase.app",
-            projectId: "centrol-bank",
-            storageBucket: "centrol-bank.firebasestorage.app",
-            messagingSenderId: "577293119465",
-            appId: "1:577293119465:web:1a6f72747c56be845ca578"
-        };
+    <div class="dashboard-grid">
 
-        // Complete safe instance generation
-        if (!firebase.apps.length) {
-            firebase.initializeApp(firebaseConfig);
-        }
-        const db = firebase.database();
-        const userId = "pranshi_main";
+        <div class="left-column">
 
-        // Object reference cache
-        const balanceDisplay = document.getElementById('balance-amount');
-        const historyContainer = document.getElementById('transaction-history');
-        const statusPill = document.getElementById('connection-status');
+            <div class="card balance-card">
 
-        function startSynchronizedNetwork() {
-            const userPath = `users/${userId}`;
+                <span class="label">Current Balance</span>
 
-            // Sync structural nodes cleanly
-            db.ref(userPath).on('value', (snapshot) => {
-                const data = snapshot.val();
-                
-                if (data) {
-                    // Update main dynamic panel counters
-                    animateValue(balanceDisplay, parseFloat(data.balance || 0));
-                    
-                    // Trigger active connection responses
-                    statusPill.innerText = "● CENTRAL LEDGER LINKED";
-                    statusPill.style.color = "";
-                    statusPill.classList.add('online');
+                <h1 id="balance-amount" class="total-balance-text">
+                    CEN 0.00
+                </h1>
 
-                    // Map primary graphic interface logs
-                    buildGraphicalHistory(data.history);
-                } else {
-                    // Initialize if completely blank node environment
-                    db.ref(userPath).set({
-                        balance: 0,
-                        history: {}
-                    });
-                }
-            }, (error) => {
-                statusPill.innerText = "X SYNC FAILED";
-                statusPill.style.color = "var(--danger)";
-                console.error("Link disruption: ", error);
-            });
-        }
+                <!-- NEW LOAN ANALYTICS -->
+                <div style="
+                    margin-top:20px;
+                    padding:16px;
+                    border-radius:18px;
+                    background:rgba(255,255,255,0.04);
+                    border:1px solid rgba(255,255,255,0.08);
+                ">
 
-        // Render main transaction system view panel
-        function buildGraphicalHistory(historyData) {
-            if (!historyData) {
-                historyContainer.innerHTML = '<p style="text-align:center; color:var(--text-sub); margin-top:30px; font-size:0.9rem;">No transaction parameters stored.</p>';
-                return;
-            }
+                    <div style="
+                        display:flex;
+                        justify-content:space-between;
+                        margin-bottom:10px;
+                    ">
+                        <span class="label" style="margin:0;">
+                            TOTAL DEBT
+                        </span>
 
-            const historicalQueue = Object.values(historyData).reverse();
-            let builtHtml = '';
-
-            historicalQueue.forEach(tx => {
-                const isCredit = tx.type === 'CREDIT';
-                const styleMarker = isCredit ? 'icon-credit' : 'icon-debit';
-                const graphicVector = isCredit ? '↓' : '↑';
-                const arithmeticSign = isCredit ? '+' : '-';
-
-                builtHtml += `
-                    <div class="transaction-item">
-                        <div class="tx-info">
-                            <div class="tx-icon ${styleMarker}">${graphicVector}</div>
-                            <div class="tx-details">
-                                <h4>${tx.description || 'System Ledger Transfer'}</h4>
-                                <p>${tx.timestamp || 'Executed Link'}</p>
-                            </div>
-                        </div>
-                        <div class="tx-amount" style="color: ${isCredit ? 'var(--success)' : 'var(--danger)'}">
-                            ${arithmeticSign}CEN ${Math.abs(tx.amount || 0).toFixed(2)}
-                        </div>
+                        <span id="total-debt"
+                            style="font-weight:700;color:#ff6b6b;">
+                            CEN 0
+                        </span>
                     </div>
-                `;
-            });
 
-            historyContainer.innerHTML = builtHtml;
-        }
+                    <div style="
+                        display:flex;
+                        justify-content:space-between;
+                    ">
+                        <span class="label" style="margin:0;">
+                            DAILY PENALTY
+                        </span>
 
-        // Fluid layout counter rendering algorithm
-        function animateValue(obj, value) {
-            let start = 0;
-            const timelineDuration = 800;
-            const startTimeStamp = performance.now();
+                        <span id="daily-penalty"
+                            style="font-weight:700;color:#f59e0b;">
+                            CEN 0
+                        </span>
+                    </div>
 
-            function renderStep(currentTime) {
-                const stepProgression = currentTime - startTimeStamp;
-                const mathematicalDelta = Math.min(stepProgression / timelineDuration, 1);
-                const absoluteComputedValue = mathematicalDelta * value;
-                
-                obj.innerHTML = `CEN ${absoluteComputedValue.toLocaleString(undefined, {minimumFractionDigits: 3})}`;
-                
-                if (mathematicalDelta < 1) {
-                    requestAnimationFrame(renderStep);
+                </div>
+
+                <div style="margin-top: 30px; display: flex; gap: 25px;">
+
+                    <div>
+                        <span class="label"
+                            style="font-size: 0.65rem;">
+                            Account Status
+                        </span>
+
+                        <p style="
+                            font-weight: 600;
+                            font-size: 0.9rem;
+                            color: #f8fafc;
+                        ">
+                            Active
+                        </p>
+                    </div>
+
+                    <div>
+                        <span class="label"
+                            style="font-size: 0.65rem;">
+                            Currency
+                        </span>
+
+                        <p style="
+                            font-weight: 600;
+                            font-size: 0.9rem;
+                            color: #f8fafc;
+                        ">
+                            CEN (Digital)
+                        </p>
+                    </div>
+
+                </div>
+
+            </div>
+
+            <div class="card" style="display: flex; flex-direction: column;">
+
+                <div id="connection-status"
+                    class="status-pill">
+                    Synchronizing Ledger...
+                </div>
+
+                <h3 style="
+                    font-size: 1.1rem;
+                    font-weight: 700;
+                    margin-bottom: 8px;
+                    margin-top: 5px;
+                ">
+                    System Security
+                </h3>
+
+                <p style="
+                    color: var(--text-sub);
+                    font-size: 0.85rem;
+                    line-height: 1.5;
+                    margin-bottom: 15px;
+                ">
+                    Automated sync handshake securely active with
+                    <b>CEN_GATEWAY</b>.
+                </p>
+
+                <div style="
+                    border-top: 1px solid var(--border);
+                    padding-top: 12px;
+                    font-size: 12px;
+                    color: var(--text-sub);
+                ">
+                    <b>Account ID:</b>
+
+                    <span style="
+                        font-family: monospace;
+                        color: #e2e8f0;
+                    ">
+                        pranshi_main
+                    </span>
+                </div>
+
+            </div>
+
+        </div>
+
+        <div class="card history-section">
+
+            <div class="section-header">
+
+                <h3 style="
+                    font-size: 1.2rem;
+                    font-weight: 700;
+                ">
+                    Recent Transactions
+                </h3>
+
+                <button id="refresh-btn"
+                    style="
+                    background: none;
+                    border: none;
+                    color: var(--accent);
+                    cursor: pointer;
+                    font-weight: 700;
+                    font-size: 0.85rem;
+                    letter-spacing: 0.5px;
+                ">
+                    REFRESH
+                </button>
+
+            </div>
+
+            <div class="history-list"
+                id="transaction-history">
+
+                <p id="loading-text"
+                    style="
+                    color: var(--text-sub);
+                    font-size: 0.9rem;
+                    text-align: center;
+                    margin-top: 30px;
+                ">
+                    Connecting to ledger nodes...
+                </p>
+
+            </div>
+
+        </div>
+
+    </div>
+</div>
+
+<script>
+
+    const firebaseConfig = {
+        apiKey: "AIzaSyDL7CPrwuAw-BrIPHQuNtydc1h1g73sFVk",
+        authDomain: "centrol-bank.firebaseapp.com",
+        databaseURL: "https://centrol-bank-default-rtdb.asia-southeast1.firebasedatabase.app",
+        projectId: "centrol-bank",
+        storageBucket: "centrol-bank.firebasestorage.app",
+        messagingSenderId: "577293119465",
+        appId: "1:577293119465:web:1a6f72747c56be845ca578"
+    };
+
+    if (!firebase.apps.length) {
+        firebase.initializeApp(firebaseConfig);
+    }
+
+    const db = firebase.database();
+    const userId = "pranshi_main";
+
+    const balanceDisplay =
+        document.getElementById('balance-amount');
+
+    const historyContainer =
+        document.getElementById('transaction-history');
+
+    const statusPill =
+        document.getElementById('connection-status');
+
+    const totalDebtDisplay =
+        document.getElementById('total-debt');
+
+    const dailyPenaltyDisplay =
+        document.getElementById('daily-penalty');
+
+    const MAX_ACTIVE_LOANS = 3;
+    const MAX_LOAN_LIMIT = 5000;
+    const DAILY_PENALTY_RATE = 0.10;
+
+    function startSynchronizedNetwork() {
+
+        const userPath = `users/${userId}`;
+
+        db.ref(userPath).on('value', (snapshot) => {
+
+            const data = snapshot.val();
+
+            if (data) {
+
+                animateValue(
+                    balanceDisplay,
+                    parseFloat(data.balance || 0)
+                );
+
+                statusPill.innerText =
+                    "● CENTRAL LEDGER LINKED";
+
+                statusPill.style.color = "";
+
+                statusPill.classList.add('online');
+
+                buildGraphicalHistory(data.history);
+
+                processLoanAnalytics(data.history);
+
+            } else {
+
+                db.ref(userPath).set({
+                    balance: 0,
+                    history: {}
+                });
+
+            }
+
+        }, (error) => {
+
+            statusPill.innerText =
+                "X SYNC FAILED";
+
+            statusPill.style.color =
+                "var(--danger)";
+
+            console.error(
+                "Link disruption: ",
+                error
+            );
+
+        });
+    }
+
+    function processLoanAnalytics(historyData) {
+
+        if (!historyData) return;
+
+        const historyArray =
+            Object.values(historyData);
+
+        let activeLoans = [];
+
+        let totalDebt = 0;
+
+        let totalDailyPenalty = 0;
+
+        historyArray.forEach(tx => {
+
+            if (
+                tx.description &&
+                tx.description.includes(
+                    'LOAN DISBURSEMENT GRANTED'
+                )
+            ) {
+
+                const amount =
+                    Math.abs(tx.amount || 0);
+
+                if (amount > MAX_LOAN_LIMIT) {
+                    return;
+                }
+
+                let weeks = 1;
+
+                const weekMatch =
+                    tx.description.match(
+                        /(\d+)\sWEEKS?/
+                    );
+
+                if (weekMatch) {
+                    weeks =
+                        parseInt(weekMatch[1]);
+                }
+
+                const txDate =
+                    new Date(tx.timestamp);
+
+                const maturity =
+                    new Date(
+                        txDate.getTime() +
+                        (
+                            weeks *
+                            7 *
+                            24 *
+                            60 *
+                            60 *
+                            1000
+                        )
+                    );
+
+                const repayAmount =
+                    amount * 1.22;
+
+                activeLoans.push({
+                    principal: amount,
+                    repayAmount,
+                    maturity
+                });
+            }
+
+            if (
+                tx.description &&
+                tx.description.includes(
+                    'REPAYMENT'
+                )
+            ) {
+
+                if (activeLoans.length > 0) {
+                    activeLoans.shift();
                 }
             }
-            requestAnimationFrame(renderStep);
+
+        });
+
+        if (
+            activeLoans.length >
+            MAX_ACTIVE_LOANS
+        ) {
+
+            activeLoans =
+                activeLoans.slice(
+                    0,
+                    MAX_ACTIVE_LOANS
+                );
         }
 
-        // Execute processing pipelines
-        window.onload = startSynchronizedNetwork;
-    </script>
+        const now = new Date();
+
+        activeLoans.forEach(loan => {
+
+            totalDebt +=
+                loan.repayAmount;
+
+            if (now > loan.maturity) {
+
+                const diffTime =
+                    now - loan.maturity;
+
+                const lateDays =
+                    Math.floor(
+                        diffTime /
+                        (
+                            1000 *
+                            60 *
+                            60 *
+                            24
+                        )
+                    );
+
+                if (lateDays > 0) {
+
+                    const penalty =
+                        loan.repayAmount *
+                        DAILY_PENALTY_RATE *
+                        lateDays;
+
+                    totalDebt += penalty;
+
+                    totalDailyPenalty +=
+                        (
+                            loan.repayAmount *
+                            DAILY_PENALTY_RATE
+                        );
+                }
+            }
+
+        });
+
+        totalDebtDisplay.innerHTML =
+            `CEN ${totalDebt.toFixed(2)}`;
+
+        dailyPenaltyDisplay.innerHTML =
+            `CEN ${totalDailyPenalty.toFixed(2)}`;
+
+        window.CEN_ACTIVE_LOANS =
+            activeLoans.length;
+
+        window.CEN_CAN_TAKE_LOAN =
+            activeLoans.length <
+            MAX_ACTIVE_LOANS;
+    }
+
+    function buildGraphicalHistory(historyData) {
+
+        if (!historyData) {
+
+            historyContainer.innerHTML =
+                '<p style="text-align:center; color:var(--text-sub); margin-top:30px; font-size:0.9rem;">No transaction parameters stored.</p>';
+
+            return;
+        }
+
+        const historicalQueue =
+            Object.values(historyData)
+            .reverse();
+
+        let builtHtml = '';
+
+        historicalQueue.forEach(tx => {
+
+            const isCredit =
+                tx.type === 'CREDIT';
+
+            const styleMarker =
+                isCredit ?
+                'icon-credit' :
+                'icon-debit';
+
+            const graphicVector =
+                isCredit ? '↓' : '↑';
+
+            const arithmeticSign =
+                isCredit ? '+' : '-';
+
+            builtHtml += `
+                <div class="transaction-item">
+
+                    <div class="tx-info">
+
+                        <div class="tx-icon ${styleMarker}">
+                            ${graphicVector}
+                        </div>
+
+                        <div class="tx-details">
+                            <h4>
+                                ${tx.description || 'System Ledger Transfer'}
+                            </h4>
+
+                            <p>
+                                ${tx.timestamp || 'Executed Link'}
+                            </p>
+                        </div>
+
+                    </div>
+
+                    <div class="tx-amount"
+                        style="
+                            color:
+                            ${isCredit ? 'var(--success)' : 'var(--danger)'}
+                        "
+                    >
+
+                        ${arithmeticSign}CEN
+                        ${Math.abs(tx.amount || 0).toFixed(2)}
+
+                    </div>
+
+                </div>
+            `;
+        });
+
+        historyContainer.innerHTML =
+            builtHtml;
+    }
+
+    function animateValue(obj, value) {
+
+        const timelineDuration = 800;
+
+        const startTimeStamp =
+            performance.now();
+
+        function renderStep(currentTime) {
+
+            const stepProgression =
+                currentTime -
+                startTimeStamp;
+
+            const mathematicalDelta =
+                Math.min(
+                    stepProgression /
+                    timelineDuration,
+                    1
+                );
+
+            const absoluteComputedValue =
+                mathematicalDelta *
+                value;
+
+            obj.innerHTML =
+                `CEN ${absoluteComputedValue.toLocaleString(undefined, {
+                    minimumFractionDigits: 3
+                })}`;
+
+            if (mathematicalDelta < 1) {
+                requestAnimationFrame(
+                    renderStep
+                );
+            }
+        }
+
+        requestAnimationFrame(renderStep);
+    }
+
+    window.onload =
+        startSynchronizedNetwork;
+
+</script>
+```
+
 </body>
 </html>
